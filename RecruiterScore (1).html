@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecruiterScore - Rate Your Recruiter</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #1a1a1a; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    
+    .header { text-align: center; color: white; margin-bottom: 3rem; }
+    .header h1 { font-size: 42px; font-weight: 700; margin-bottom: 0.5rem; }
+    .header p { font-size: 18px; opacity: 0.9; }
+    
+    .layout { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 3rem; }
+    
+    .card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    
+    .form-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; color: #2d3748; }
+    
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    
+    .star-rating { display: flex; gap: 0.5rem; font-size: 28px; cursor: pointer; }
+    .star { cursor: pointer; transition: color 0.2s; color: #ddd; }
+    .star.active { color: #ffc107; }
+    .star:hover, .star.hover { color: #ffc107; }
+    
+    .rating-value { font-size: 14px; color: #667eea; font-weight: 600; margin-top: 0.5rem; }
+    
+    .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+    .btn:active { transform: translateY(0); }
+    
+    .success-message { display: none; padding: 12px 16px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 6px; margin-top: 1rem; font-size: 13px; }
+    .success-message.show { display: block; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .search-section { margin-bottom: 2rem; }
+    .search-section h2 { font-size: 18px; font-weight: 600; margin-bottom: 1rem; color: #2d3748; }
+    
+    .search-controls { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .search-controls input, .search-controls select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 32px; font-weight: 700; }
+    .stat-label { font-size: 12px; opacity: 0.9; text-transform: uppercase; margin-top: 0.5rem; }
+    
+    .reviews-list { }
+    .review-item { background: #f8f9fa; border-left: 4px solid #667eea; padding: 1.5rem; margin-bottom: 1rem; border-radius: 6px; transition: all 0.2s; }
+    .review-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    
+    .review-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .review-name { font-size: 16px; font-weight: 600; color: #2d3748; }
+    .review-rating { font-size: 14px; color: #ffc107; }
+    .star-inline { color: #ffc107; }
+    
+    .review-source { font-size: 12px; color: #7f8c8d; margin-bottom: 0.5rem; }
+    .review-date { font-size: 12px; color: #bbb; }
+    
+    .review-comment { font-size: 14px; color: #555; line-height: 1.5; margin: 0.75rem 0; }
+    
+    .no-reviews { text-align: center; padding: 2rem; color: #7f8c8d; }
+    
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-positive { background: #d4edda; color: #155724; }
+    .badge-neutral { background: #fff3cd; color: #856404; }
+    .badge-negative { background: #f8d7da; color: #721c24; }
+    
+    .btn-secondary { padding: 12px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+    .btn-secondary:hover { background: #764ba2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+    .btn-secondary:active { transform: translateY(0); }
+    
+    .footer { text-align: center; color: white; margin-top: 3rem; font-size: 13px; opacity: 0.8; }
+    
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .search-controls { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .header h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⭐ RecruiterScore</h1>
+      <p>Rate recruiters. Build transparency. Find the best.</p>
+    </div>
+
+    <div class="layout">
+      <!-- Left: Submit Review Form -->
+      <div class="card form-card">
+        <h2>Submit a Review</h2>
+        <form id="reviewForm">
+          <div class="form-group">
+            <label>Recruiter Name *</label>
+            <input type="text" id="recruiterName" placeholder="e.g., Mike Patrick, Sarah Johnson" required>
+          </div>
+
+          <div class="form-group">
+            <label>Agency / Company (optional)</label>
+            <input type="text" id="recruiterCompany" placeholder="e.g., ABC Recruitment, Morgan McKinley">
+          </div>
+
+          <div class="form-group">
+            <label>Rating *</label>
+            <div class="star-rating" id="starRating">
+              <span class="star" data-value="1">★</span>
+              <span class="star" data-value="2">★</span>
+              <span class="star" data-value="3">★</span>
+              <span class="star" data-value="4">★</span>
+              <span class="star" data-value="5">★</span>
+            </div>
+            <div class="rating-value" id="ratingValue">Click to rate</div>
+            <input type="hidden" id="ratingInput" required>
+          </div>
+
+          <div class="form-group">
+            <label>Your Comment *</label>
+            <textarea id="comment" placeholder="Share your experience. Was communication good? Did they oversell roles? Were they responsive?" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Your Role (optional)</label>
+            <select id="userRole">
+              <option value="">Select...</option>
+              <option value="Job Seeker">Job Seeker</option>
+              <option value="Hiring Manager">Hiring Manager</option>
+              <option value="HR Professional">HR Professional</option>
+              <option value="Employer">Employer</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn">Submit Review</button>
+          <div class="success-message" id="successMessage">✓ Review submitted! Thank you for contributing to transparency.</div>
+        </form>
+      </div>
+
+      <!-- Right: Reviews -->
+      <div class="card">
+        <div class="search-section">
+          <h2>Browse Reviews</h2>
+
+          <div class="search-controls">
+            <input type="text" id="searchInput" placeholder="Search recruiter name...">
+            <select id="filterRating">
+              <option value="">All Ratings</option>
+              <option value="5">★★★★★ (5 stars)</option>
+              <option value="4">★★★★ (4 stars)</option>
+              <option value="3">★★★ (3 stars)</option>
+              <option value="2">★★ (2 stars)</option>
+              <option value="1">★ (1 star)</option>
+            </select>
+            <select id="sortBy">
+              <option value="recent">Recent First</option>
+              <option value="highest">Highest Rated</option>
+              <option value="lowest">Lowest Rated</option>
+            </select>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value" id="totalReviews">0</div>
+              <div class="stat-label">Total Reviews</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="recruitersRated">0</div>
+              <div class="stat-label">Recruiters Rated</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" id="avgRating">0.0</div>
+              <div class="stat-label">Avg Rating</div>
+            </div>
+          </div>
+
+          <button class="btn-secondary" id="exportBtn" style="margin-bottom: 1.5rem; width: 100%; background: #667eea; color: white;">📥 Export to CSV</button>
+        </div>
+
+        <div class="reviews-list" id="reviewsList">
+          <div class="no-reviews">No reviews yet. Be the first to share your experience!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>RecruiterScore • Building transparency in recruitment • <strong>All reviews are anonymized and community-moderated</strong></p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('reviewForm');
+    const recruiterName = document.getElementById('recruiterName');
+    const recruiterCompany = document.getElementById('recruiterCompany');
+    const starRating = document.getElementById('starRating');
+    const ratingInput = document.getElementById('ratingInput');
+    const ratingValue = document.getElementById('ratingValue');
+    const comment = document.getElementById('comment');
+    const userRole = document.getElementById('userRole');
+    const successMessage = document.getElementById('successMessage');
+    const searchInput = document.getElementById('searchInput');
+    const filterRating = document.getElementById('filterRating');
+    const sortBy = document.getElementById('sortBy');
+    const reviewsList = document.getElementById('reviewsList');
+
+    let currentRating = 0;
+    let reviews = JSON.parse(localStorage.getItem('recruiterReviews')) || [];
+
+    // Star rating interactions
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.addEventListener('click', function() {
+        currentRating = this.dataset.value;
+        ratingInput.value = currentRating;
+        updateStars();
+        updateRatingText();
+      });
+
+      star.addEventListener('mouseover', function() {
+        const hoverValue = this.dataset.value;
+        stars.forEach((s, i) => {
+          if (i < hoverValue) s.classList.add('hover');
+          else s.classList.remove('hover');
+        });
+      });
+    });
+
+    starRating.addEventListener('mouseleave', updateStars);
+
+    function updateStars() {
+      stars.forEach((star, i) => {
+        if (i < currentRating) star.classList.add('active');
+        else star.classList.remove('active');
+      });
+    }
+
+    function updateRatingText() {
+      const ratingTexts = {
+        1: '⭐ Poor',
+        2: '⭐⭐ Below Average',
+        3: '⭐⭐⭐ Average',
+        4: '⭐⭐⭐⭐ Good',
+        5: '⭐⭐⭐⭐⭐ Excellent'
+      };
+      ratingValue.textContent = ratingTexts[currentRating] || 'Click to rate';
+    }
+
+    // Submit review
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!currentRating) {
+        alert('Please select a rating');
+        return;
+      }
+
+      const review = {
+        id: Date.now(),
+        name: recruiterName.value.trim(),
+        company: recruiterCompany.value.trim() || 'Independent',
+        rating: parseInt(currentRating),
+        comment: comment.value.trim(),
+        role: userRole.value,
+        date: new Date().toLocaleDateString()
+      };
+
+      reviews.push(review);
+      localStorage.setItem('recruiterReviews', JSON.stringify(reviews));
+
+      // Reset form
+      form.reset();
+      currentRating = 0;
+      updateStars();
+      updateRatingText();
+
+      // Show success message
+      successMessage.classList.add('show');
+      setTimeout(() => successMessage.classList.remove('show'), 3000);
+
+      renderReviews();
+    });
+
+    function renderReviews() {
+      let filtered = reviews;
+
+      // Filter by search
+      if (searchInput.value) {
+        const search = searchInput.value.toLowerCase();
+        filtered = filtered.filter(r => 
+          r.name.toLowerCase().includes(search) || 
+          r.company.toLowerCase().includes(search)
+        );
+      }
+
+      // Filter by rating
+      if (filterRating.value) {
+        filtered = filtered.filter(r => r.rating == filterRating.value);
+      }
+
+      // Sort
+      if (sortBy.value === 'highest') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (sortBy.value === 'lowest') {
+        filtered.sort((a, b) => a.rating - b.rating);
+      } else {
+        filtered.sort((a, b) => b.id - a.id);
+      }
+
+      // Update stats
+      const uniqueRecruiters = [...new Set(reviews.map(r => r.name))].length;
+      const avgRating = reviews.length > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1) : 0;
+      document.getElementById('totalReviews').textContent = reviews.length;
+      document.getElementById('recruitersRated').textContent = uniqueRecruiters;
+      document.getElementById('avgRating').textContent = avgRating;
+
+      // Render reviews
+      if (filtered.length === 0) {
+        reviewsList.innerHTML = '<div class="no-reviews">No reviews match your search. Try a different filter.</div>';
+        return;
+      }
+
+      reviewsList.innerHTML = filtered.map(review => {
+        let badge = 'badge-neutral';
+        if (review.rating >= 4) badge = 'badge-positive';
+        if (review.rating <= 2) badge = 'badge-negative';
+
+        return `
+          <div class="review-item">
+            <div class="review-header">
+              <div>
+                <div class="review-name">${escapeHtml(review.name)}</div>
+                <div class="review-source">${escapeHtml(review.company)}${review.role ? ` • ${escapeHtml(review.role)}` : ''}</div>
+              </div>
+              <div class="review-rating">
+                ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+              </div>
+            </div>
+            <div class="review-comment">"${escapeHtml(review.comment)}"</div>
+            <div class="review-date">${review.date}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event listeners for filtering
+    searchInput.addEventListener('input', renderReviews);
+    filterRating.addEventListener('change', renderReviews);
+    sortBy.addEventListener('change', renderReviews);
+
+    // Export to CSV
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      if (reviews.length === 0) {
+        alert('No reviews to export yet');
+        return;
+      }
+
+      let csv = 'Recruiter Name,Company,Rating,Comment,User Role,Date\n';
+      
+      reviews.forEach(review => {
+        const name = `"${review.name.replace(/"/g, '""')}"`;
+        const company = `"${review.company.replace(/"/g, '""')}"`;
+        const rating = review.rating;
+        const comment = `"${review.comment.replace(/"/g, '""')}"`;
+        const role = review.role ? `"${review.role}"` : '""';
+        const date = review.date;
+        
+        csv += `${name},${company},${rating},${comment},${role},${date}\n`;
+      });
+
+      // Create blob and download
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `recruiter-reviews-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // Initial render
+    renderReviews();
+  </script>
+</body>
+</html>
